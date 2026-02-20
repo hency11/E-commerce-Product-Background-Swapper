@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Commerce Product Background Swapper</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=Manrope:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050508;
+      --surface: #0d0d14;
+      --surface2: #141420;
+      --border: #1e1e30;
+      --accent: #ff2d6e;
+      --accent2: #7c3aff;
+      --accent3: #00e5c8;
+      --text: #f0eeff;
+      --muted: #6b6b90;
+      --glow: rgba(255,45,110,0.4);
+      --glow2: rgba(124,58,255,0.3);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Manrope', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(124,58,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,58,255,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.12;
+    }
+    .blob1 { width: 600px; height: 600px; background: var(--accent2); top: -200px; right: -150px; animation: drift 15s ease-in-out infinite; }
+    .blob2 { width: 500px; height: 500px; background: var(--accent); bottom: -150px; left: -100px; animation: drift 18s ease-in-out infinite reverse; }
+
+    @keyframes drift {
+      0%, 100% { transform: translate(0,0) scale(1); }
+      33% { transform: translate(40px,-50px) scale(1.05); }
+      66% { transform: translate(-30px, 30px) scale(0.95); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 40px;
+    }
+
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.15em;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .badge {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--accent3);
+      border: 1px solid var(--accent3);
+      padding: 6px 12px;
+      border-radius: 4px;
+      letter-spacing: 0.1em;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .hero h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(90deg, var(--accent3), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--muted);
+      margin-bottom: 20px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    .panel-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent3);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .upload-area {
+      border: 2px dashed var(--accent2);
+      border-radius: 8px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: rgba(124, 58, 255, 0.05);
+    }
+
+    .upload-area:hover {
+      border-color: var(--accent3);
+      background: rgba(0, 229, 200, 0.05);
+    }
+
+    .upload-area.dragover {
+      border-color: var(--accent);
+      background: rgba(255, 45, 110, 0.1);
+    }
+
+    .upload-area input {
+      display: none;
+    }
+
+    .upload-text {
+      font-size: 1rem;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .upload-hint {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .preview-container {
+      margin-top: 20px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #previewImage {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .bg-selector {
+      margin-top: 24px;
+    }
+
+    .bg-selector-title {
+      font-size: 0.9rem;
+      color: var(--accent3);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .bg-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .bg-option {
+      aspect-ratio: 1;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bg-option:hover {
+      border-color: var(--accent3);
+      transform: scale(1.05);
+    }
+
+    .bg-option.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px var(--glow);
+    }
+
+    .bg-option-preview {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: white;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      font-weight: bold;
+    }
+
+    .controls {
+      margin-top: 24px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .btn-process {
+      background: linear-gradient(135deg, var(--accent2) 0%, var(--accent) 100%);
+      color: white;
+    }
+
+    .btn-process:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px var(--glow);
+    }
+
+    .btn-process:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-download {
+      background: var(--surface2);
+      border: 1px solid var(--accent3);
+      color: var(--accent3);
+    }
+
+    .btn-download:hover {
+      background: rgba(0, 229, 200, 0.1);
+    }
+
+    .btn-download:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .slider-group {
+      margin-top: 16px;
+    }
+
+    .slider-label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border);
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent3);
+      cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent3);
+      cursor: pointer;
+      border: none;
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--accent3);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: rgba(0,229,200,0.1);
+      border: 1px solid var(--accent3);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .status.active {
+      display: flex;
+    }
+
+    .result-container {
+      margin-top: 20px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      aspect-ratio: 1;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .result-container.active {
+      display: flex;
+    }
+
+    #resultCanvas {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .comparison-item {
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .comparison-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .bg-grid { grid-template-columns: repeat(2, 1fr); }
+      .hero h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+
+  <div class="container">
+    <header>
+      <div class="logo">BG SWAPPER</div>
+      <div class="badge">PRO EDITION v1.0</div>
+    </header>
+
+    <div class="hero">
+      <h1>Product <span>Background Swapper</span></h1>
+      <p>Transform your product images with professional studio-style backgrounds. Perfect for e-commerce listings and marketing materials.</p>
+    </div>
+
+    <div class="layout">
+      <!-- INPUT PANEL -->
+      <div class="panel">
+        <div class="panel-title">📷 Upload Product Image</div>
+
+        <div class="upload-area" id="uploadArea">
+          <input type="file" id="imageInput" accept="image/*">
+          <div class="upload-text">Click or drag an image here</div>
+          <div class="upload-hint">Supports JPG, PNG, WebP (Max 10MB)</div>
+        </div>
+
+        <div class="preview-container" id="previewContainer" style="display: none;">
+          <img id="previewImage">
+        </div>
+
+        <div class="bg-selector" id="bgSelector" style="display: none;">
+          <div class="bg-selector-title">🎨 Background Style</div>
+          <div class="bg-grid" id="bgGrid"></div>
+        </div>
+
+        <div class="slider-group" id="sliderGroup" style="display: none;">
+          <div class="slider-label">
+            <span>Background Threshold</span>
+            <span id="thresholdValue">30</span>
+          </div>
+          <input type="range" id="thresholdSlider" min="5" max="100" value="30">
+
+          <div class="slider-label" style="margin-top: 12px;">
+            <span>Edge Feather</span>
+            <span id="featherValue">5</span>
+          </div>
+          <input type="range" id="featherSlider" min="0" max="15" value="5">
+        </div>
+
+        <div class="controls" id="controls" style="display: none;">
+          <button class="btn btn-process" id="processBtn">⚡ Process Image</button>
+          <button class="btn btn-download" id="downloadBtn" disabled>⬇ Download</button>
+        </div>
+      </div>
+
+      <!-- OUTPUT PANEL -->
+      <div class="panel">
+        <div class="panel-title">✨ Preview Result</div>
+
+        <div class="status" id="status">
+          <div class="spinner"></div>
+          <span>Processing your image...</span>
+        </div>
+
+        <div id="outputContainer" style="text-align: center; color: var(--muted); padding: 60px 20px;">
+          Upload an image to see the preview here
+        </div>
+
+        <div class="result-container" id="resultContainer">
+          <canvas id="resultCanvas"></canvas>
+        </div>
+
+        <div class="comparison" id="comparison" style="display: none;">
+          <div class="comparison-item">
+            <img id="compOriginal" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+            <div class="comparison-label">ORIGINAL</div>
+          </div>
+          <div class="comparison-item">
+            <canvas id="compResult"></canvas>
+            <div class="comparison-label">PROCESSED</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const backgrounds = [
+      { name: 'White Studio', color: '#FFFFFF' },
+      { name: 'Light Gray', color: '#F5F5F5' },
+      { name: 'Soft Beige', color: '#F0EAE0' },
+      { name: 'Pale Blue', color: '#E8F0F7' },
+      { name: 'Mint Green', color: '#E8F5F0' },
+      { name: 'Gradient Purple', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+      { name: 'Gradient Peach', gradient: 'linear-gradient(135deg, #FFD89B 0%, #FF7F5C 100%)' },
+      { name: 'Gradient Teal', gradient: 'linear-gradient(135deg, #1FA2FF 0%, #12D8FA 100%)' },
+      { name: 'Dark Charcoal', color: '#2A2A2A' }
+    ];
+
+    let selectedBg = backgrounds[0];
+    let uploadedImage = null;
+    let processedCanvas = null;
+
+    // Setup background selector
+    const bgGrid = document.getElementById('bgGrid');
+    backgrounds.forEach((bg, idx) => {
+      const option = document.createElement('div');
+      option.className = 'bg-option' + (idx === 0 ? ' active' : '');
+      const preview = document.createElement('div');
+      preview.className = 'bg-option-preview';
+      if (bg.color) {
+        preview.style.background = bg.color;
+      } else {
+        preview.style.background = bg.gradient;
+      }
+      preview.textContent = bg.name;
+      option.appendChild(preview);
+      option.onclick = () => selectBackground(bg, option);
+      bgGrid.appendChild(option);
+    });
+
+    function selectBackground(bg, element) {
+      document.querySelectorAll('.bg-option').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+      selectedBg = bg;
+    }
+
+    // Upload area
+    const uploadArea = document.getElementById('uploadArea');
+    const imageInput = document.getElementById('imageInput');
+
+    uploadArea.onclick = () => imageInput.click();
+
+    uploadArea.ondragover = (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    };
+
+    uploadArea.ondragleave = () => {
+      uploadArea.classList.remove('dragover');
+    };
+
+    uploadArea.ondrop = (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        loadImage(files[0]);
+      }
+    };
+
+    imageInput.onchange = (e) => {
+      if (e.target.files.length > 0) {
+        loadImage(e.target.files[0]);
+      }
+    };
+
+    function loadImage(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          uploadedImage = img;
+          document.getElementById('previewImage').src = e.target.result;
+          document.getElementById('previewContainer').style.display = 'flex';
+          document.getElementById('bgSelector').style.display = 'block';
+          document.getElementById('sliderGroup').style.display = 'block';
+          document.getElementById('controls').style.display = 'flex';
+          document.getElementById('outputContainer').innerHTML = 'Click "Process Image" to generate result';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Sliders
+    document.getElementById('thresholdSlider').oninput = (e) => {
+      document.getElementById('thresholdValue').textContent = e.target.value;
+    };
+
+    document.getElementById('featherSlider').oninput = (e) => {
+      document.getElementById('featherValue').textContent = e.target.value;
+    };
+
+    // Process button
+    document.getElementById('processBtn').onclick = processImage;
+
+    function processImage() {
+      if (!uploadedImage) {
+        alert('Please upload an image first');
+        return;
+      }
+
+      try {
+        document.getElementById('status').classList.add('active');
+        document.getElementById('processBtn').disabled = true;
+
+        const threshold = parseInt(document.getElementById('thresholdSlider').value);
+
+        // Create work canvas
+        const workCanvas = document.createElement('canvas');
+        workCanvas.width = uploadedImage.width;
+        workCanvas.height = uploadedImage.height;
+        const workCtx = workCanvas.getContext('2d', { willReadFrequently: true });
+        workCtx.drawImage(uploadedImage, 0, 0);
+
+        // Get image data
+        const imgData = workCtx.getImageData(0, 0, workCanvas.width, workCanvas.height);
+        const data = imgData.data;
+
+        // Sample background color from top-left corner
+        const bgColor = {
+          r: data[0],
+          g: data[1],
+          b: data[2]
+        };
+
+        // Mark and remove background pixels
+        const alpha = new Uint8Array(workCanvas.width * workCanvas.height);
+        
+        // Initialize alpha channel
+        for (let i = 0; i < data.length; i += 4) {
+          alpha[i / 4] = data[i + 3];
+        }
+
+        // Flood fill from edges
+        const visited = new Uint8Array(workCanvas.width * workCanvas.height);
+        const queue = [];
+
+        // Add all edge pixels to queue
+        for (let x = 0; x < workCanvas.width; x++) {
+          queue.push([x, 0]);
+          queue.push([x, workCanvas.height - 1]);
+        }
+        for (let y = 0; y < workCanvas.height; y++) {
+          queue.push([0, y]);
+          queue.push([workCanvas.width - 1, y]);
+        }
+
+        // Flood fill algorithm
+        while (queue.length > 0) {
+          const [x, y] = queue.shift();
+          
+          if (x < 0 || x >= workCanvas.width || y < 0 || y >= workCanvas.height) continue;
+          
+          const idx = y * workCanvas.width + x;
+          if (visited[idx]) continue;
+          visited[idx] = 1;
+
+          const pixelIdx = idx * 4;
+          const r = data[pixelIdx];
+          const g = data[pixelIdx + 1];
+          const b = data[pixelIdx + 2];
+
+          // Check if color matches background
+          const dist = Math.sqrt(
+            (r - bgColor.r) ** 2 +
+            (g - bgColor.g) ** 2 +
+            (b - bgColor.b) ** 2
+          );
+
+          if (dist < threshold) {
+            data[pixelIdx + 3] = 0; // Make transparent
+            
+            // Add neighbors to queue
+            queue.push([x + 1, y]);
+            queue.push([x - 1, y]);
+            queue.push([x, y + 1]);
+            queue.push([x, y - 1]);
+          }
+        }
+
+        workCtx.putImageData(imgData, 0, 0);
+
+        // Create result canvas with new background
+        const resultCanvas = document.getElementById('resultCanvas');
+        resultCanvas.width = uploadedImage.width;
+        resultCanvas.height = uploadedImage.height;
+        const resultCtx = resultCanvas.getContext('2d');
+
+        // Draw new background
+        if (selectedBg.color) {
+          resultCtx.fillStyle = selectedBg.color;
+          resultCtx.fillRect(0, 0, resultCanvas.width, resultCanvas.height);
+        } else {
+          const grad = resultCtx.createLinearGradient(0, 0, resultCanvas.width, resultCanvas.height);
+          
+          if (selectedBg.name.includes('Purple')) {
+            grad.addColorStop(0, '#667eea');
+            grad.addColorStop(1, '#764ba2');
+          } else if (selectedBg.name.includes('Peach')) {
+            grad.addColorStop(0, '#FFD89B');
+            grad.addColorStop(1, '#FF7F5C');
+          } else if (selectedBg.name.includes('Teal')) {
+            grad.addColorStop(0, '#1FA2FF');
+            grad.addColorStop(1, '#12D8FA');
+          } else {
+            grad.addColorStop(0, '#667eea');
+            grad.addColorStop(1, '#764ba2');
+          }
+          
+          resultCtx.fillStyle = grad;
+          resultCtx.fillRect(0, 0, resultCanvas.width, resultCanvas.height);
+        }
+
+        // Draw product with transparent background
+        resultCtx.drawImage(workCanvas, 0, 0);
+
+        // Update comparison view
+        document.getElementById('resultContainer').classList.add('active');
+        document.getElementById('comparison').style.display = 'none';
+        document.getElementById('outputContainer').style.display = 'none';
+
+        // Store for download
+        processedCanvas = resultCanvas;
+
+        document.getElementById('status').classList.remove('active');
+        document.getElementById('processBtn').disabled = false;
+        document.getElementById('downloadBtn').disabled = false;
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error processing image');
+        document.getElementById('status').classList.remove('active');
+        document.getElementById('processBtn').disabled = false;
+      }
+    }
+
+    // Download button
+    document.getElementById('downloadBtn').onclick = () => {
+      if (!processedCanvas) return;
+      const link = document.createElement('a');
+      link.href = processedCanvas.toDataURL('image/png');
+      link.download = 'product-bg-swapped.png';
+      link.click();
+    };
+  </script>
+</body>
+</html>
